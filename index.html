@@ -131,9 +131,9 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--t1);font-
 
 /* LEADERBOARD */
 .lb-wrap{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r2);overflow:hidden;box-shadow:var(--shadow)}
-.lb-head{display:grid;grid-template-columns:40px 42px 1fr 80px;gap:8px;padding:10px 14px;background:var(--bg);border-bottom:1px solid var(--bdr)}
+.lb-head{display:grid;grid-template-columns:40px 42px 1fr 90px 110px;gap:8px;padding:10px 14px;background:var(--bg);border-bottom:1px solid var(--bdr)}
 .lb-hc{font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:0.05em}
-.lb-row{display:grid;grid-template-columns:40px 42px 1fr 80px;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--bdr);transition:background 0.1s}
+.lb-row{display:grid;grid-template-columns:40px 42px 1fr 90px 110px;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--bdr);transition:background 0.1s}
 .lb-row:last-child{border-bottom:none}
 .lb-row:hover{background:var(--pri-light)}
 .lb-row.r1{border-left:3px solid var(--pri)}
@@ -333,6 +333,30 @@ canvas#wc{display:block}
 /* NOTICE BADGE */
 .pts-bonus-note{font-size:10px;color:var(--suc);margin-top:4px;display:flex;align-items:center;gap:3px}
 
+/* FLOATING POINTS ANIMATION */
+.pts-float{position:fixed;pointer-events:none;font-size:20px;font-weight:800;z-index:9999;animation:floatUp 1.2s ease forwards}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}60%{opacity:1;transform:translateY(-60px) scale(1.2)}100%{opacity:0;transform:translateY(-100px) scale(0.8)}}
+
+/* RANDOM PICKER MODAL */
+.picker-modal{width:380px;text-align:center}
+.picker-drum{height:80px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--pri-light),#F5F0FF);border-radius:16px;margin:12px 0;overflow:hidden;position:relative;border:2px solid var(--pri-mid)}
+.picker-name{font-size:26px;font-weight:800;color:var(--pri);font-family:'Mitr',sans-serif;transition:all 0.08s;user-select:none}
+.picker-name.rolling{animation:rollName 0.08s infinite}
+@keyframes rollName{0%{transform:translateY(-4px);opacity:0.7}50%{transform:translateY(4px);opacity:1}100%{transform:translateY(-4px);opacity:0.7}}
+.picker-av{width:60px;height:60px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;border:3px solid var(--pri-mid);overflow:hidden}
+.picker-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+
+/* MULTI-SELECT MODAL */
+.multi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px;max-height:280px;overflow-y:auto;margin:8px 0}
+.multi-item{border:2px solid var(--bdr);border-radius:10px;padding:8px;cursor:pointer;text-align:center;transition:all 0.12s;background:var(--bg)}
+.multi-item:hover{border-color:var(--pri-mid);background:var(--pri-light)}
+.multi-item.sel{border-color:var(--pri);background:var(--pri-light)}
+.multi-item.sel-neg{border-color:var(--dan);background:var(--dan-light)}
+.multi-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin:0 auto 5px;overflow:hidden}
+.multi-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.multi-name{font-size:11px;font-weight:600;color:var(--t1);line-height:1.3}
+.multi-check{font-size:14px;margin-top:3px}
+
 /* WHEEL STUDENT PTS */
 .whl-pts-badge{display:inline-flex;align-items:center;gap:5px;background:var(--pri-light);border:1px solid var(--pri-mid);border-radius:999px;padding:4px 12px;font-size:12px;font-weight:600;color:var(--pri);margin-top:6px;min-height:24px;transition:all 0.2s}
 .whl-pts-badge.warn{background:var(--dan-light);border-color:#F5C4B3;color:var(--dan)}
@@ -436,7 +460,14 @@ canvas#wc{display:block}
 
       <!-- STUDENTS -->
       <div id="pg-students" class="pg">
-        <div class="page-hdr"><div class="page-title">นักเรียนทั้งหมด</div></div>
+        <div class="page-hdr">
+          <div class="page-title">นักเรียนทั้งหมด</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn-pri" onclick="openPickerModal()" style="font-size:12px;padding:8px 14px"><span style="font-size:14px">🎲</span> สุ่มชื่อ</button>
+            <button class="btn-pri" onclick="openMultiModal(1)" style="font-size:12px;padding:8px 14px;background:linear-gradient(135deg,var(--suc),#0A9E78)"><span style="font-size:14px">⭐</span> ให้แต้มหลายคน</button>
+            <button class="btn-pri" onclick="openMultiModal(-1)" style="font-size:12px;padding:8px 14px;background:linear-gradient(135deg,var(--dan),#C23333)"><span style="font-size:14px">➖</span> หักแต้มหลายคน</button>
+          </div>
+        </div>
         <div id="sgrid" class="scard-grid"></div>
       </div>
 
@@ -448,7 +479,8 @@ canvas#wc{display:block}
             <div class="lb-hc" style="text-align:center">อันดับ</div>
             <div class="lb-hc"></div>
             <div class="lb-hc">ชื่อ</div>
-            <div class="lb-hc" style="text-align:right">แต้ม</div>
+            <div class="lb-hc" style="text-align:right">แต้มปัจจุบัน</div>
+            <div class="lb-hc" style="text-align:right">แต้มรวมที่เคยได้</div>
           </div>
           <div id="lb-list"></div>
         </div>
@@ -722,6 +754,41 @@ canvas#wc{display:block}
 <!-- TOAST -->
 <div class="toast" id="toast-el"></div>
 
+<!-- MODAL: สุ่มชื่อนักเรียน -->
+<div class="modal-backdrop" id="picker-modal-ov">
+  <div class="modal picker-modal">
+    <div class="mod-hdr"><h3>🎲 สุ่มชื่อนักเรียน</h3><button class="mod-x" onclick="closePickerModal()">×</button></div>
+    <div id="picker-av-wrap"><div class="picker-av" id="picker-av" style="background:#EEF2FF;color:#3730A3;font-size:22px">?</div></div>
+    <div class="picker-drum"><div class="picker-name" id="picker-name">กด "สุ่ม" เพื่อเริ่ม</div></div>
+    <div id="picker-result" style="font-size:11px;color:var(--t3);min-height:18px;margin-bottom:4px"></div>
+    <div class="mod-actions" style="justify-content:center">
+      <button class="btn-pri" id="picker-btn" onclick="doPickRandom()" style="min-width:120px;font-size:13px">🎲 สุ่มเลย!</button>
+      <button class="mod-cancel" onclick="closePickerModal()">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ให้/หักแต้มหลายคน -->
+<div class="modal-backdrop" id="multi-modal-ov">
+  <div class="modal modal-wide">
+    <div class="mod-hdr"><h3 id="multi-modal-title">ให้แต้มหลายคน</h3><button class="mod-x" onclick="closeMultiModal()">×</button></div>
+    <div class="mod-r">
+      <div class="mod-lbl">เลือกนักเรียน <span id="multi-count" style="color:var(--pri)">(0 คน)</span></div>
+      <div class="multi-grid" id="multi-grid"></div>
+    </div>
+    <div class="mod-r"><div class="mod-lbl">แต้ม</div><input type="number" class="mod-pts-inp" id="multi-pts" value="1" min="1" /></div>
+    <div class="mod-r">
+      <div class="mod-lbl">เหตุผล</div>
+      <input type="text" class="mod-rsn-inp" id="multi-rsn" placeholder="เช่น ช่วยเพื่อน" />
+      <div class="qchips" id="multi-qc"></div>
+    </div>
+    <div class="mod-actions">
+      <button class="mod-cancel" onclick="closeMultiModal()">ยกเลิก</button>
+      <button class="btn-pri" id="multi-confirm-btn" onclick="confirmMultiPts()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: แก้ไขนักเรียน (รูป) -->
 <div class="modal-backdrop" id="std-modal-ov">
   <div class="modal">
@@ -916,12 +983,25 @@ function renderLB(){
   const sorted=[...students].sort((a,b)=>b.pts-a.pts);
   const medals=['🥇','🥈','🥉'];
   const photo=(s,sz)=>{const p=studentPhotos[s.id];if(p)return`<img src="${p}" style="width:${sz}px;height:${sz}px;object-fit:cover;border-radius:50%">`;return`<span style="font-size:${Math.floor(sz*0.38)}px;font-weight:700">${getInits(s.name)}</span>`};
+  // คำนวณแต้มรวมที่เคยได้ทั้งหมด (เฉพาะบวก) จาก ptLog
+  const totalEarned=(sid)=>{
+    const s=students.find(x=>x.id===sid);
+    // รวมจาก ptLog เฉพาะรายการบวก ของนักเรียนคนนั้น
+    return ptLog.filter(l=>l.name===(s?.name||'')&&l.pts>0).reduce((a,l)=>a+l.pts,0);
+  };
   document.getElementById('lb-list').innerHTML=sorted.map((s,i)=>`
     <div class="lb-row${i===0?' r1':''}">
       <div class="lb-rank">${medals[i]||'#'+(i+1)}</div>
       <div class="lb-av" style="background:${AVS[s.ci][0]};color:${AVS[s.ci][1]}">${photo(s,32)}</div>
       <div><div class="lb-name">${s.name}</div><div class="lb-no">เลขที่ ${s.num} ${getBadges(s.pts)}</div></div>
-      <div class="lb-pts">${s.pts} ⭐</div>
+      <div style="text-align:right">
+        <div class="lb-pts">${s.pts} ⭐</div>
+        <div style="font-size:9px;color:var(--t3)">คงเหลือ</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:13px;font-weight:700;color:var(--pri)">${totalEarned(s.id)} ⭐</div>
+        <div style="font-size:9px;color:var(--t3)">รวมที่เคยได้</div>
+      </div>
     </div>`).join('');
 }
 
@@ -1176,6 +1256,8 @@ function confirmPts(){
   const s=students.find(x=>x.id===curSid);if(!s)return;
   s.pts=Math.max(0,s.pts+pts);ptLog.unshift({name:s.name,pts,reason,time:nowTime()});if(ptLog.length>300)ptLog=ptLog.slice(0,300);
   save();closeModal();render();
+  pts>0?sfxGain():sfxLose();
+  spawnFloat(window.innerWidth/2-20,window.innerHeight/2-60,pts);
 }
 
 // ======= SAVINGS MODAL =======
@@ -1471,9 +1553,135 @@ function confirmBuy(){
   s.bag.push({source:'shop',name:item.name,icon:item.icon||'🎁',price:item.price,time:nowTime()});
   ptLog.unshift({name:s.name,pts:-item.price,reason:'ซื้อ '+item.name+' จากร้านค้า',time:nowTime()});
   save();closeBuyModal();updateShopBuyerPts();render();
+  sfxBuy();
   showToast('🛍️ ซื้อ '+item.name+' สำเร็จ! เหลือ '+s.pts+' แต้ม','suc');
 }
 function closeBuyModal(){document.getElementById('buy-modal-ov').classList.remove('open');curBuySid=null;curBuyItem=null}
+
+// ======= SOUND FX =======
+const AudioCtx=window.AudioContext||window.webkitAudioContext;
+let audioCtx=null;
+function getAudio(){if(!audioCtx)try{audioCtx=new AudioCtx()}catch(e){}return audioCtx}
+function playTone(freq,dur,type='sine',vol=0.3){
+  const ac=getAudio();if(!ac)return;
+  try{
+    const o=ac.createOscillator(),g=ac.createGain();
+    o.connect(g);g.connect(ac.destination);
+    o.type=type;o.frequency.setValueAtTime(freq,ac.currentTime);
+    g.gain.setValueAtTime(vol,ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+dur);
+    o.start();o.stop(ac.currentTime+dur);
+  }catch(e){}
+}
+function sfxGain(){playTone(523,0.1);setTimeout(()=>playTone(659,0.1),100);setTimeout(()=>playTone(784,0.2),200)}
+function sfxLose(){playTone(330,0.15,'sawtooth');setTimeout(()=>playTone(262,0.25,'sawtooth'),150)}
+function sfxBuy(){playTone(440,0.08);setTimeout(()=>playTone(554,0.08),80);setTimeout(()=>playTone(659,0.15),160)}
+function sfxSpin(){playTone(800,0.05,'square',0.15)}
+function sfxPick(){
+  [523,587,659,698,784].forEach((f,i)=>setTimeout(()=>playTone(f,0.08),i*60));
+  setTimeout(()=>{playTone(1047,0.05);setTimeout(()=>playTone(1319,0.3),60)},380);
+}
+
+// ======= FLOATING PTS ANIMATION =======
+function spawnFloat(x,y,pts){
+  const div=document.createElement('div');
+  div.className='pts-float';
+  div.textContent=(pts>0?'+':'')+pts+'⭐';
+  div.style.color=pts>0?'#085041':'#991B1B';
+  div.style.left=x+'px';div.style.top=y+'px';
+  document.body.appendChild(div);
+  setTimeout(()=>div.remove(),1300);
+}
+
+// ======= RANDOM PICKER =======
+let pickerRolling=false;
+function openPickerModal(){
+  document.getElementById('picker-name').textContent='กด "สุ่ม" เพื่อเริ่ม';
+  document.getElementById('picker-name').classList.remove('rolling');
+  document.getElementById('picker-result').textContent='';
+  const av=document.getElementById('picker-av');
+  av.innerHTML='?';av.style.background='#EEF2FF';av.style.color='#3730A3';av.style.fontSize='22px';
+  document.getElementById('picker-btn').disabled=false;
+  document.getElementById('picker-btn').textContent='🎲 สุ่มเลย!';
+  document.getElementById('picker-modal-ov').classList.add('open');
+}
+function closePickerModal(){document.getElementById('picker-modal-ov').classList.remove('open');pickerRolling=false}
+function doPickRandom(){
+  if(!students.length||pickerRolling)return;
+  pickerRolling=true;
+  document.getElementById('picker-btn').disabled=true;
+  const nameEl=document.getElementById('picker-name');
+  nameEl.classList.add('rolling');
+  let elapsed=0;const rollDur=2200,tickMs=80;
+  const tick=setInterval(()=>{
+    nameEl.textContent=students[Math.floor(Math.random()*students.length)].name.split(' ')[0];
+    sfxSpin();
+    elapsed+=tickMs;
+    if(elapsed>=rollDur){
+      clearInterval(tick);
+      const winner=students[Math.floor(Math.random()*students.length)];
+      nameEl.classList.remove('rolling');
+      nameEl.textContent=winner.name;
+      const av=document.getElementById('picker-av');
+      const photo=studentPhotos[winner.id];
+      if(photo){av.innerHTML=`<img src="${photo}" style="width:60px;height:60px;object-fit:cover;border-radius:50%">`;av.style.background='transparent';av.style.fontSize='0';}
+      else{av.innerHTML=getInits(winner.name);av.style.background=AVS[winner.ci][0];av.style.color=AVS[winner.ci][1];av.style.fontSize='22px';}
+      document.getElementById('picker-result').textContent='เลขที่ '+winner.num;
+      sfxPick();pickerRolling=false;
+      document.getElementById('picker-btn').disabled=false;
+      document.getElementById('picker-btn').textContent='🎲 สุ่มอีกครั้ง!';
+    }
+  },tickMs);
+}
+
+// ======= MULTI-SELECT PTS =======
+let multiType=1,multiSelected=new Set();
+function openMultiModal(type){
+  multiType=type;multiSelected=new Set();
+  document.getElementById('multi-modal-title').textContent=type>0?'⭐ ให้แต้มหลายคน':'➖ หักแต้มหลายคน';
+  document.getElementById('multi-pts').value=1;
+  document.getElementById('multi-rsn').value='';
+  document.getElementById('multi-qc').innerHTML=[...POS,...NEG].map(r=>`<span class="qc" onclick="document.getElementById('multi-rsn').value='${r}'">${r}</span>`).join('');
+  renderMultiGrid();
+  document.getElementById('multi-modal-ov').classList.add('open');
+}
+function renderMultiGrid(){
+  const selClass=multiType>0?'sel':'sel-neg';
+  document.getElementById('multi-grid').innerHTML=students.map(s=>{
+    const sel=multiSelected.has(s.id);
+    const photo=studentPhotos[s.id];
+    const avHTML=photo?`<img src="${photo}" style="width:32px;height:32px;object-fit:cover;border-radius:50%">`:`<span style="font-size:11px;font-weight:700;color:${AVS[s.ci][1]}">${getInits(s.name)}</span>`;
+    return`<div class="multi-item${sel?' '+selClass:''}" onclick="toggleMulti(${s.id})">
+      <div class="multi-av" style="background:${AVS[s.ci][0]}">${avHTML}</div>
+      <div class="multi-name">${s.name.split(' ')[0]}</div>
+      <div class="multi-check">${sel?(multiType>0?'✅':'❌'):'⬜'}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('multi-count').textContent='('+multiSelected.size+' คน)';
+}
+function toggleMulti(id){
+  if(multiSelected.has(id))multiSelected.delete(id);else multiSelected.add(id);
+  renderMultiGrid();
+}
+function closeMultiModal(){document.getElementById('multi-modal-ov').classList.remove('open')}
+function confirmMultiPts(){
+  if(!multiSelected.size)return showToast('⚠️ กรุณาเลือกนักเรียนอย่างน้อย 1 คน','warn');
+  const pts=parseInt(document.getElementById('multi-pts').value)||0;
+  if(pts===0)return showToast('⚠️ กรุณาใส่แต้ม','warn');
+  const reason=document.getElementById('multi-rsn').value.trim()||'ให้แต้ม';
+  const actualPts=multiType>0?pts:-pts;
+  let count=0;
+  multiSelected.forEach(sid=>{
+    const s=students.find(x=>x.id===sid);if(!s)return;
+    s.pts=Math.max(0,s.pts+actualPts);
+    ptLog.unshift({name:s.name,pts:actualPts,reason,time:nowTime()});
+    count++;
+  });
+  if(ptLog.length>300)ptLog=ptLog.slice(0,300);
+  save();closeMultiModal();render();
+  actualPts>0?sfxGain():sfxLose();
+  showToast((actualPts>0?'⭐ ให้':'➖ หัก')+' '+Math.abs(actualPts)+' แต้ม กับ '+count+' คน เรียบร้อย!',actualPts>0?'suc':'dan');
+}
 
 init();
 </script>
