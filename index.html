@@ -1364,19 +1364,38 @@ function openStdModal(id){
   document.getElementById('std-modal-ov').classList.add('open');
 }
 function closeStdModal(){document.getElementById('std-modal-ov').classList.remove('open');curStdId=null}
-function handlePhotoUpload(event){
+// ======= CLOUDINARY PHOTO UPLOAD =======
+const CLD_NAME='s2x4he1x';
+const CLD_PRESET='goodpoints_upload'; // unsigned preset
+
+async function handlePhotoUpload(event){
   const file=event.target.files[0];if(!file||!curStdId)return;
-  if(file.size>2*1024*1024)return alert('ไฟล์ใหญ่เกินไป (สูงสุด 2MB)');
-  const reader=new FileReader();
-  reader.onload=e=>{
-    studentPhotos[curStdId]=e.target.result;
+  if(file.size>5*1024*1024)return showToast('⚠️ ไฟล์ใหญ่เกินไป (สูงสุด 5MB)','warn');
+  event.target.value='';
+  // แสดง loading
+  const ph=document.getElementById('std-modal-photo');
+  ph.innerHTML='⏳';ph.style.fontSize='24px';
+  showToast('📤 กำลังอัปโหลดรูป...','pri');
+  try{
+    const form=new FormData();
+    form.append('file',file);
+    form.append('upload_preset',CLD_PRESET);
+    form.append('folder','goodpoints');
+    const res=await fetch(`https://api.cloudinary.com/v1_1/${CLD_NAME}/image/upload`,{method:'POST',body:form});
+    if(!res.ok)throw new Error('Upload failed: '+res.status);
+    const data=await res.json();
+    if(!data.secure_url)throw new Error('No URL returned');
+    // เก็บแค่ URL ไม่ใช่ base64
+    studentPhotos[curStdId]=data.secure_url;
     save();
     openStdModal(curStdId);
     render();
     if(document.getElementById('pg-savings').classList.contains('on'))renderSavings();
-  };
-  reader.readAsDataURL(file);
-  event.target.value='';
+    showToast('✅ อัปโหลดรูปสำเร็จ! sync ทุกเครื่องแล้ว','suc');
+  }catch(e){
+    showToast('❌ อัปโหลดไม่สำเร็จ: '+e.message,'dan');
+    openStdModal(curStdId);
+  }
 }
 
 // ======= WHEEL =======
