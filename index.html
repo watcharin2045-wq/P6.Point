@@ -253,9 +253,26 @@ canvas#wc{display:block}
 
 /* LOG */
 .log-wrap{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r2);overflow:hidden;box-shadow:var(--shadow)}
-.log-hdr{padding:12px 16px;background:var(--bg);border-bottom:1px solid var(--bdr);font-size:12px;font-weight:600;color:var(--t2);display:flex;align-items:center;gap:6px}
+.log-hdr{padding:12px 16px;background:var(--bg);border-bottom:1px solid var(--bdr);font-size:12px;font-weight:600;color:var(--t2);display:flex;align-items:center;justify-content:space-between;gap:6px}
+.log-hdr-left{display:flex;align-items:center;gap:6px}
 .log-row{display:flex;align-items:flex-start;gap:10px;padding:10px 16px;border-bottom:1px solid var(--bdr)}
 .log-row:last-child{border-bottom:none}
+
+/* PAGINATION */
+.pag-wrap{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--bg);border-top:1px solid var(--bdr);flex-wrap:wrap;gap:8px}
+.pag-info{font-size:11px;color:var(--t3)}
+.pag-btns{display:flex;align-items:center;gap:4px}
+.pag-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--bdr);background:var(--card);color:var(--t2);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.12s;font-family:'Sarabun',sans-serif}
+.pag-btn:hover:not(:disabled){background:var(--pri-light);color:var(--pri);border-color:var(--pri-mid)}
+.pag-btn:disabled{opacity:0.35;cursor:not-allowed}
+.pag-btn.active{background:var(--pri);color:#fff;border-color:var(--pri);font-weight:700}
+.log-filter-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--bdr);background:var(--bg)}
+.log-filter-btn{padding:4px 12px;border-radius:999px;border:1px solid var(--bdr);background:transparent;font-size:11px;cursor:pointer;color:var(--t2);font-family:'Sarabun',sans-serif;transition:all 0.12s}
+.log-filter-btn:hover{border-color:var(--pri);color:var(--pri)}
+.log-filter-btn.active{background:var(--pri);color:#fff;border-color:var(--pri);font-weight:600}
+.log-search{display:flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:4px 10px;font-size:11px;margin-left:auto}
+.log-search input{border:none;background:transparent;font-size:11px;color:var(--t1);font-family:'Sarabun',sans-serif;width:110px}
+.log-search input:focus{outline:none}
 .log-badge{min-width:36px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:2px}
 .lg{background:var(--suc-light);color:#085041}.lr{background:var(--dan-light);color:#712B13}
 .log-n{font-size:12px;font-weight:600;color:var(--t1)}
@@ -618,10 +635,25 @@ canvas#wc{display:block}
 
       <!-- LOG -->
       <div id="pg-log" class="pg">
-        <div class="page-hdr"><div class="page-title">ประวัติการให้แต้ม</div></div>
+        <div class="page-hdr">
+          <div><div class="page-title">📋 ประวัติการให้แต้ม</div></div>
+          <div style="font-size:11px;color:var(--t3)" id="log-total-count"></div>
+        </div>
         <div class="log-wrap">
-          <div class="log-hdr"><i class="ti ti-history" style="font-size:14px"></i>รายการล่าสุด</div>
+          <div class="log-hdr">
+            <div class="log-hdr-left"><i class="ti ti-history" style="font-size:14px"></i>รายการทั้งหมด</div>
+            <div class="log-search"><i class="ti ti-search" style="font-size:12px;color:var(--t3)"></i><input type="text" id="log-search-inp" placeholder="ค้นหาชื่อ..." oninput="logPage=1;renderLog()"></div>
+          </div>
+          <div class="log-filter-row">
+            <button class="log-filter-btn active" id="lf-all" onclick="setLogFilter('all')">ทั้งหมด</button>
+            <button class="log-filter-btn" id="lf-pos" onclick="setLogFilter('pos')">⭐ ได้แต้ม</button>
+            <button class="log-filter-btn" id="lf-neg" onclick="setLogFilter('neg')">➖ หักแต้ม</button>
+          </div>
           <div id="log-list"></div>
+          <div class="pag-wrap" id="log-pag-wrap">
+            <div class="pag-info" id="log-pag-info"></div>
+            <div class="pag-btns" id="log-pag-btns"></div>
+          </div>
         </div>
       </div>
 
@@ -831,6 +863,8 @@ function ls(k,d){try{return JSON.parse(localStorage.getItem(k)||'null')||d}catch
 function ss(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
 
 function saveLocal(){
+  const ts=Date.now();
+  localStorage.setItem('gp_ts',ts);
   ss('gp_s',students);ss('gp_l',ptLog);ss('gp_p',prizes);
   ss('gp_sv',savTx);ss('gp_sh',shopItems);ss('gp_photos',studentPhotos);
 }
@@ -844,11 +878,12 @@ function save(){
 
 async function pushCloud(){
   setSyncBadge('syncing');
+  const ts=parseInt(localStorage.getItem('gp_ts')||Date.now());
   try{
     const r=await fetch(JB_URL,{
       method:'PUT',
       headers:{'Content-Type':'application/json','X-Master-Key':JB_KEY},
-      body:JSON.stringify({students,ptLog,prizes,savTx,shopItems,studentPhotos,_ts:Date.now()})
+      body:JSON.stringify({students,ptLog,prizes,savTx,shopItems,studentPhotos,_ts:ts})
     });
     if(!r.ok)throw new Error('HTTP '+r.status);
     setSyncBadge('ok');
@@ -864,10 +899,21 @@ async function pullCloud(){
     if(!r.ok)throw new Error('HTTP '+r.status);
     const d=await r.json();
     if(d&&d.students){
-      students=d.students||[];ptLog=d.ptLog||[];prizes=d.prizes||[];
-      savTx=d.savTx||[];shopItems=d.shopItems||[];studentPhotos=d.studentPhotos||{};
-      students.forEach(s=>{if(!s.bag)s.bag=[]});
-      saveLocal();
+      // เช็ค timestamp — ถ้า cloud ใหม่กว่า local ค่อย apply
+      const localTs=parseInt(localStorage.getItem('gp_ts')||'0');
+      const cloudTs=d._ts||0;
+      if(cloudTs>=localTs){
+        students=d.students||[];ptLog=d.ptLog||[];prizes=d.prizes||[];
+        savTx=d.savTx||[];shopItems=d.shopItems||[];studentPhotos=d.studentPhotos||{};
+        students.forEach(s=>{if(!s.bag)s.bag=[]});
+        saveLocal();
+      }
+      // ถ้า local ใหม่กว่า → push ขึ้น cloud แทน
+      else if(localTs>cloudTs){
+        setSyncBadge('ok');
+        pushCloud();
+        return true;
+      }
     }
     setSyncBadge('ok');
     return true;
@@ -914,6 +960,13 @@ async function init(){
   // ดึงข้อมูลล่าสุดจาก cloud แล้ว render ใหม่
   const ok=await pullCloud();
   if(ok){render();drawWheel();}
+  // auto-refresh ทุก 30 วินาที
+  setInterval(async()=>{
+    const ok=await pullCloud();
+    if(ok){render();drawWheel();
+      if(document.getElementById('pg-savings').classList.contains('on'))renderSavings();
+    }
+  },30000);
 }
 
 function setDefaultData(){
@@ -1184,10 +1237,83 @@ function openHistModal(sid){
 function closeHistModal(){document.getElementById('hist-modal-ov').classList.remove('open')}
 
 // ======= LOG =======
+let logPage=1,logFilter='all';
+const LOG_PER_PAGE=20;
+
+function setLogFilter(f){
+  logFilter=f;logPage=1;
+  ['all','pos','neg'].forEach(x=>{
+    const el=document.getElementById('lf-'+x);
+    if(el)el.className='log-filter-btn'+(f===x?' active':'');
+  });
+  renderLog();
+}
+
 function renderLog(){
+  const q=(document.getElementById('log-search-inp')?.value||'').toLowerCase();
+  // filter
+  let logs=[...ptLog];
+  if(logFilter==='pos')logs=logs.filter(l=>l.pts>0);
+  if(logFilter==='neg')logs=logs.filter(l=>l.pts<0);
+  if(q)logs=logs.filter(l=>l.name.toLowerCase().includes(q)||l.reason.toLowerCase().includes(q));
+
+  const total=logs.length;
+  const totalPages=Math.max(1,Math.ceil(total/LOG_PER_PAGE));
+  if(logPage>totalPages)logPage=totalPages;
+  const start=(logPage-1)*LOG_PER_PAGE;
+  const pageItems=logs.slice(start,start+LOG_PER_PAGE);
+
   const el=document.getElementById('log-list');
-  if(!ptLog.length){el.innerHTML='<div class="empty">ยังไม่มีประวัติ</div>';return}
-  el.innerHTML=ptLog.map(l=>`<div class="log-row"><div class="log-badge ${l.pts>0?'lg':'lr'}">${l.pts>0?'+'+l.pts:l.pts}</div><div><div class="log-n">${l.name}</div><div class="log-r">${l.reason}</div><div class="log-t">${l.time}</div></div></div>`).join('');
+  if(!el)return;
+
+  // total count
+  const tc=document.getElementById('log-total-count');
+  if(tc)tc.textContent=total+' รายการ';
+
+  if(!pageItems.length){
+    el.innerHTML='<div class="empty">ยังไม่มีประวัติ</div>';
+  } else {
+    el.innerHTML=pageItems.map((l,i)=>{
+      const no=start+i+1;
+      return`<div class="log-row">
+        <div style="font-size:10px;color:var(--t3);min-width:24px;text-align:center;margin-top:4px">${no}</div>
+        <div class="log-badge ${l.pts>0?'lg':'lr'}">${l.pts>0?'+'+l.pts:l.pts}</div>
+        <div style="flex:1">
+          <div class="log-n">${l.name}</div>
+          <div class="log-r">${l.reason}</div>
+          <div class="log-t">${l.time}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // pagination info
+  const pi=document.getElementById('log-pag-info');
+  if(pi)pi.textContent=`หน้า ${logPage} / ${totalPages} (${total} รายการ)`;
+
+  // pagination buttons
+  const pb=document.getElementById('log-pag-btns');
+  if(!pb)return;
+  let btns='';
+  // prev
+  btns+=`<button class="pag-btn" onclick="logPage--;renderLog()" ${logPage<=1?'disabled':''}>‹</button>`;
+  // page numbers
+  const range=[];
+  if(totalPages<=7){for(let i=1;i<=totalPages;i++)range.push(i);}
+  else{
+    range.push(1);
+    if(logPage>3)range.push('...');
+    for(let i=Math.max(2,logPage-1);i<=Math.min(totalPages-1,logPage+1);i++)range.push(i);
+    if(logPage<totalPages-2)range.push('...');
+    range.push(totalPages);
+  }
+  range.forEach(p=>{
+    if(p==='...')btns+=`<div class="pag-btn" style="cursor:default;border:none">…</div>`;
+    else btns+=`<button class="pag-btn${p===logPage?' active':''}" onclick="logPage=${p};renderLog()">${p}</button>`;
+  });
+  // next
+  btns+=`<button class="pag-btn" onclick="logPage++;renderLog()" ${logPage>=totalPages?'disabled':''}>›</button>`;
+  pb.innerHTML=btns;
 }
 
 // ======= MANAGE =======
