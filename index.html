@@ -853,10 +853,10 @@ let students=[],ptLog=[],prizes=[],savTx=[],shopItems=[],spinning=false,curSid=n
 let barCI=null,donutCI=null,curBuySid=null,curBuyItem=null,curStdId=null;
 let studentPhotos={};
 
-// ======= JSONBIN SYNC =======
-const JB_BIN='6a3000baf5f4af5e29f55de8';
-const JB_KEY='$2a$10$M5yi5UNBkX8T4TlUKPGe8O1MOp6hMjbLx382/SqX7Ev8zHsfKkeX.';
-const JB_URL='https://api.jsonbin.io/v3/b/'+JB_BIN;
+// ======= FIREBASE REALTIME DATABASE =======
+
+
+const FB_URL='https://goodpoints-aa63c-default-rtdb.asia-southeast1.firebasedatabase.app/data.json';
 let syncTimer=null;
 
 function ls(k,d){try{return JSON.parse(localStorage.getItem(k)||'null')||d}catch{return d}}
@@ -880,26 +880,23 @@ async function pushCloud(){
   setSyncBadge('syncing');
   const ts=parseInt(localStorage.getItem('gp_ts')||Date.now());
   try{
-    const r=await fetch(JB_URL,{
+    const r=await fetch(FB_URL,{
       method:'PUT',
-      headers:{'Content-Type':'application/json','X-Master-Key':JB_KEY},
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({students,ptLog,prizes,savTx,shopItems,studentPhotos,_ts:ts})
     });
     if(!r.ok)throw new Error('HTTP '+r.status);
     setSyncBadge('ok');
-  }catch(e){setSyncBadge('err')}
+  }catch(e){console.error('pushCloud:',e.message);setSyncBadge('err')}
 }
 
 async function pullCloud(){
   setSyncBadge('syncing');
   try{
-    const r=await fetch(JB_URL+'/latest',{
-      headers:{'X-Master-Key':JB_KEY,'X-Bin-Meta':'false'}
-    });
+    const r=await fetch(FB_URL,{method:'GET'});
     if(!r.ok)throw new Error('HTTP '+r.status);
     const d=await r.json();
     if(d&&d.students){
-      // เช็ค timestamp — ถ้า cloud ใหม่กว่า local ค่อย apply
       const localTs=parseInt(localStorage.getItem('gp_ts')||'0');
       const cloudTs=d._ts||0;
       if(cloudTs>=localTs){
@@ -907,9 +904,7 @@ async function pullCloud(){
         savTx=d.savTx||[];shopItems=d.shopItems||[];studentPhotos=d.studentPhotos||{};
         students.forEach(s=>{if(!s.bag)s.bag=[]});
         saveLocal();
-      }
-      // ถ้า local ใหม่กว่า → push ขึ้น cloud แทน
-      else if(localTs>cloudTs){
+      } else if(localTs>cloudTs){
         setSyncBadge('ok');
         pushCloud();
         return true;
@@ -917,7 +912,7 @@ async function pullCloud(){
     }
     setSyncBadge('ok');
     return true;
-  }catch(e){setSyncBadge('err');return false;}
+  }catch(e){console.error('pullCloud:',e.message);setSyncBadge('err');return false;}
 }
 
 function setSyncBadge(state){
